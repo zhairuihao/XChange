@@ -208,4 +208,31 @@ public interface BinanceFuturesAuthenticated extends BinanceFutures{
             @QueryParam(SIGNATURE) ParamsDigest signature)
             throws IOException, BinanceException;
 
+    /**
+     * symbol	STRING	YES	交易对 leverage	INT	YES	目标杠杆倍数：1 到 125 整数 recvWindow	LONG	NO timestamp	LONG	YES
+     */
+    @POST
+    @Path("/fapi/v1/leverage")
+    void leverage(
+        @FormParam("symbol") String symbol,
+        @FormParam("leverage") Integer leverage,
+        @FormParam("recvWindow") Long recvWindow,
+        @FormParam("timestamp") SynchronizedValueFactory<Long> timestamp,
+        @HeaderParam(X_MBX_APIKEY) String apiKey,
+        @QueryParam(SIGNATURE) ParamsDigest signature
+        )
+        throws IOException, BinanceException;
+
+
+    @GET
+    @Path("/fapi/v1/commissionRate")
+    String commissionRate(
+        @QueryParam("symbol") String symbol,
+        @QueryParam("recvWindow") Long recvWindow,
+        @QueryParam("timestamp") SynchronizedValueFactory<Long> timestamp,
+        @HeaderParam(X_MBX_APIKEY) String apiKey,
+        @QueryParam(SIGNATURE) ParamsDigest signature
+    )
+        throws IOException, BinanceException;
+
 }

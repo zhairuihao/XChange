@@ -35,9 +35,10 @@ public class BinanceMarketDataServiceRaw extends BinanceBaseService {
         .call();
   }
 
-  public BinanceOrderbook getBinanceOrderbookAllProducts(Instrument pair, Integer limit) throws IOException {
+  public BinanceOrderbook getBinanceOrderbookAllProducts(Instrument pair, Integer limit)
+      throws IOException {
     return decorateApiCall(() ->
-            (pair instanceof FuturesContract)
+        (pair instanceof FuturesContract)
             ? binanceFutures.depth(BinanceAdapters.toSymbol(pair), limit)
             : binance.depth(BinanceAdapters.toSymbol(pair), limit))
         .withRetry(retry("depth"))
@@ -49,11 +50,11 @@ public class BinanceMarketDataServiceRaw extends BinanceBaseService {
       Instrument pair, Long fromId, Long startTime, Long endTime, Integer limit)
       throws IOException {
     return decorateApiCall(
-            () ->
-                    (pair instanceof FuturesContract)
-            ? binanceFutures.aggTrades(
-                    BinanceAdapters.toSymbol(pair), fromId, startTime, endTime, limit)
-            : binance.aggTrades(
+        () ->
+            (pair instanceof FuturesContract)
+                ? binanceFutures.aggTrades(
+                BinanceAdapters.toSymbol(pair), fromId, startTime, endTime, limit)
+                : binance.aggTrades(
                     BinanceAdapters.toSymbol(pair), fromId, startTime, endTime, limit))
         .withRetry(retry("aggTrades"))
         .withRateLimiter(rateLimiter(REQUEST_WEIGHT_RATE_LIMITER), aggTradesPermits(limit))
@@ -69,13 +70,18 @@ public class BinanceMarketDataServiceRaw extends BinanceBaseService {
   }
 
   public List<BinanceKline> klines(
-      CurrencyPair pair, KlineInterval interval, Integer limit, Long startTime, Long endTime)
+      Instrument pair, KlineInterval interval, Integer limit, Long startTime, Long endTime)
       throws IOException {
     List<Object[]> raw =
         decorateApiCall(
-                () ->
-                    binance.klines(
-                        BinanceAdapters.toSymbol(pair), interval.code(), limit, startTime, endTime))
+            () ->
+                (pair instanceof FuturesContract) ?
+                    binanceFutures.klines(
+                        BinanceAdapters.toSymbol(pair), interval.code(), limit, startTime, endTime)
+                    :
+                        binance.klines(
+                            BinanceAdapters.toSymbol(pair), interval.code(), limit, startTime,
+                            endTime))
             .withRetry(retry("klines"))
             .withRateLimiter(rateLimiter(REQUEST_WEIGHT_RATE_LIMITER))
             .call();
@@ -94,8 +100,8 @@ public class BinanceMarketDataServiceRaw extends BinanceBaseService {
   public BinanceTicker24h ticker24hAllProducts(Instrument pair) throws IOException {
     BinanceTicker24h ticker24h =
         decorateApiCall(() -> (pair instanceof FuturesContract)
-                ? binanceFutures.ticker24h(BinanceAdapters.toSymbol(pair))
-                : binance.ticker24h(BinanceAdapters.toSymbol(pair)))
+            ? binanceFutures.ticker24h(BinanceAdapters.toSymbol(pair))
+            : binance.ticker24h(BinanceAdapters.toSymbol(pair)))
             .withRetry(retry("ticker24h"))
             .withRateLimiter(rateLimiter(REQUEST_WEIGHT_RATE_LIMITER))
             .call();
@@ -103,18 +109,19 @@ public class BinanceMarketDataServiceRaw extends BinanceBaseService {
     return ticker24h;
   }
 
+
   public List<BinanceFundingRate> getBinanceFundingRates() throws IOException {
     return decorateApiCall(binanceFutures::fundingRates)
-                    .withRetry(retry("fundingRate"))
-                    .withRateLimiter(rateLimiter(REQUEST_WEIGHT_RATE_LIMITER))
-                    .call();
+        .withRetry(retry("fundingRate"))
+        .withRateLimiter(rateLimiter(REQUEST_WEIGHT_RATE_LIMITER))
+        .call();
   }
 
   public BinanceFundingRate getBinanceFundingRate(Instrument instrument) throws IOException {
     return decorateApiCall(() -> binanceFutures.fundingRate(BinanceAdapters.toSymbol(instrument)))
-            .withRetry(retry("fundingRate"))
-            .withRateLimiter(rateLimiter(REQUEST_WEIGHT_RATE_LIMITER))
-            .call();
+        .withRetry(retry("fundingRate"))
+        .withRateLimiter(rateLimiter(REQUEST_WEIGHT_RATE_LIMITER))
+        .call();
   }
 
   public BinancePrice tickerPrice(CurrencyPair pair) throws IOException {

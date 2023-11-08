@@ -5,6 +5,8 @@ import static org.knowm.xchange.binance.BinanceResilience.ORDERS_PER_SECOND_RATE
 import static org.knowm.xchange.binance.BinanceResilience.REQUEST_WEIGHT_RATE_LIMITER;
 import static org.knowm.xchange.client.ResilienceRegistries.NON_IDEMPOTENT_CALLS_RETRY_CONFIG_NAME;
 
+import jakarta.ws.rs.HeaderParam;
+import jakarta.ws.rs.QueryParam;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
@@ -21,6 +23,8 @@ import org.knowm.xchange.currency.CurrencyPair;
 import org.knowm.xchange.derivative.FuturesContract;
 import org.knowm.xchange.exceptions.ExchangeException;
 import org.knowm.xchange.instrument.Instrument;
+import si.mazi.rescu.ParamsDigest;
+import si.mazi.rescu.SynchronizedValueFactory;
 
 public class BinanceTradeServiceRaw extends BinanceBaseService {
 
@@ -34,18 +38,19 @@ public class BinanceTradeServiceRaw extends BinanceBaseService {
     return openOrdersAllProducts(null);
   }
 
-  public List<BinanceOrder> openOrdersAllProducts(Instrument pair) throws BinanceException, IOException {
+  public List<BinanceOrder> openOrdersAllProducts(Instrument pair)
+      throws BinanceException, IOException {
     return decorateApiCall(
-            () ->
-                    (pair instanceof FuturesContract)
-            ? binanceFutures.futureOpenOrders(
-                            Optional.of(pair).map(BinanceAdapters::toSymbol).orElse(null),
-                            getRecvWindow(),
-                            getTimestampFactory(),
-                            apiKey,
-                            signatureCreator
-                    )
-            : binance.openOrders(
+        () ->
+            (pair instanceof FuturesContract)
+                ? binanceFutures.futureOpenOrders(
+                Optional.of(pair).map(BinanceAdapters::toSymbol).orElse(null),
+                getRecvWindow(),
+                getTimestampFactory(),
+                apiKey,
+                signatureCreator
+            )
+                : binance.openOrders(
                     Optional.ofNullable(pair).map(BinanceAdapters::toSymbol).orElse(null),
                     getRecvWindow(),
                     getTimestampFactory(),
@@ -71,24 +76,24 @@ public class BinanceTradeServiceRaw extends BinanceBaseService {
       BinanceNewOrder.NewOrderResponseType newOrderRespType)
       throws IOException, BinanceException {
     return decorateApiCall(
-            () ->
-                binance.newOrder(
-                    BinanceAdapters.toSymbol(pair),
-                    side,
-                    type,
-                    timeInForce,
-                    quantity,
-                    quoteOrderQty,
-                    price,
-                    newClientOrderId,
-                    stopPrice,
-                    trailingDelta,
-                    icebergQty,
-                    newOrderRespType,
-                    getRecvWindow(),
-                    getTimestampFactory(),
-                    apiKey,
-                    signatureCreator))
+        () ->
+            binance.newOrder(
+                BinanceAdapters.toSymbol(pair),
+                side,
+                type,
+                timeInForce,
+                quantity,
+                quoteOrderQty,
+                price,
+                newClientOrderId,
+                stopPrice,
+                trailingDelta,
+                icebergQty,
+                newOrderRespType,
+                getRecvWindow(),
+                getTimestampFactory(),
+                apiKey,
+                signatureCreator))
         .withRetry(retry("newOrder", NON_IDEMPOTENT_CALLS_RETRY_CONFIG_NAME))
         .withRateLimiter(rateLimiter(ORDERS_PER_SECOND_RATE_LIMITER))
         .withRateLimiter(rateLimiter(ORDERS_PER_DAY_RATE_LIMITER))
@@ -97,45 +102,45 @@ public class BinanceTradeServiceRaw extends BinanceBaseService {
   }
 
   public BinanceFutureNewOrder newFutureOrder(
-          Instrument pair,
-          OrderSide side,
-          OrderType type,
-          TimeInForce timeInForce,
-          BigDecimal quantity,
-          boolean reduceOnly,
-          BigDecimal price,
-          String newClientOrderId,
-          BigDecimal stopPrice,
-          boolean closePosition,
-          BigDecimal activationPrice,
-          BigDecimal callbackRate,
-          BinanceNewOrder.NewOrderResponseType newOrderRespType)
-          throws IOException, BinanceException {
+      Instrument pair,
+      OrderSide side,
+      OrderType type,
+      TimeInForce timeInForce,
+      BigDecimal quantity,
+      boolean reduceOnly,
+      BigDecimal price,
+      String newClientOrderId,
+      BigDecimal stopPrice,
+      boolean closePosition,
+      BigDecimal activationPrice,
+      BigDecimal callbackRate,
+      BinanceNewOrder.NewOrderResponseType newOrderRespType)
+      throws IOException, BinanceException {
     return decorateApiCall(
-            () ->
-                    binanceFutures.newOrder(
-                            BinanceAdapters.toSymbol(pair),
-                            side,
-                            type,
-                            timeInForce,
-                            quantity,
-                            reduceOnly,
-                            price,
-                            newClientOrderId,
-                            stopPrice,
-                            closePosition,
-                            activationPrice,
-                            callbackRate,
-                            newOrderRespType,
-                            getRecvWindow(),
-                            getTimestampFactory(),
-                            apiKey,
-                            signatureCreator))
-            .withRetry(retry("newFutureOrder", NON_IDEMPOTENT_CALLS_RETRY_CONFIG_NAME))
-            .withRateLimiter(rateLimiter(ORDERS_PER_SECOND_RATE_LIMITER))
-            .withRateLimiter(rateLimiter(ORDERS_PER_DAY_RATE_LIMITER))
-            .withRateLimiter(rateLimiter(REQUEST_WEIGHT_RATE_LIMITER))
-            .call();
+        () ->
+            binanceFutures.newOrder(
+                BinanceAdapters.toSymbol(pair),
+                side,
+                type,
+                timeInForce,
+                quantity,
+                reduceOnly,
+                price,
+                newClientOrderId,
+                stopPrice,
+                closePosition,
+                activationPrice,
+                callbackRate,
+                newOrderRespType,
+                getRecvWindow(),
+                getTimestampFactory(),
+                apiKey,
+                signatureCreator))
+        .withRetry(retry("newFutureOrder", NON_IDEMPOTENT_CALLS_RETRY_CONFIG_NAME))
+        .withRateLimiter(rateLimiter(ORDERS_PER_SECOND_RATE_LIMITER))
+        .withRateLimiter(rateLimiter(ORDERS_PER_DAY_RATE_LIMITER))
+        .withRateLimiter(rateLimiter(REQUEST_WEIGHT_RATE_LIMITER))
+        .call();
   }
 
   public void testNewOrder(
@@ -152,43 +157,44 @@ public class BinanceTradeServiceRaw extends BinanceBaseService {
       BigDecimal icebergQty)
       throws IOException, BinanceException {
     decorateApiCall(
-            () ->
-                binance.testNewOrder(
-                    BinanceAdapters.toSymbol(pair),
-                    side,
-                    type,
-                    timeInForce,
-                    quantity,
-                    quoteOrderQty,
-                    price,
-                    newClientOrderId,
-                    stopPrice,
-                    trailingDelta,
-                    icebergQty,
-                    getRecvWindow(),
-                    getTimestampFactory(),
-                    apiKey,
-                    signatureCreator))
+        () ->
+            binance.testNewOrder(
+                BinanceAdapters.toSymbol(pair),
+                side,
+                type,
+                timeInForce,
+                quantity,
+                quoteOrderQty,
+                price,
+                newClientOrderId,
+                stopPrice,
+                trailingDelta,
+                icebergQty,
+                getRecvWindow(),
+                getTimestampFactory(),
+                apiKey,
+                signatureCreator))
         .withRetry(retry("testNewOrder"))
         .withRateLimiter(rateLimiter(REQUEST_WEIGHT_RATE_LIMITER))
         .call();
   }
 
-  public BinanceOrder orderStatusAllProducts(Instrument pair, Long orderId, String origClientOrderId)
+  public BinanceOrder orderStatusAllProducts(Instrument pair, Long orderId,
+      String origClientOrderId)
       throws IOException, BinanceException {
     return decorateApiCall(
-            () ->
-                    (pair instanceof FuturesContract)
-            ? binanceFutures.futureOrderStatus(
-                            BinanceAdapters.toSymbol(pair),
-                            orderId,
-                            origClientOrderId,
-                            getRecvWindow(),
-                            getTimestampFactory(),
-                            super.apiKey,
-                            super.signatureCreator
-                    )
-            :   binance.orderStatus(
+        () ->
+            (pair instanceof FuturesContract)
+                ? binanceFutures.futureOrderStatus(
+                BinanceAdapters.toSymbol(pair),
+                orderId,
+                origClientOrderId,
+                getRecvWindow(),
+                getTimestampFactory(),
+                super.apiKey,
+                super.signatureCreator
+            )
+                : binance.orderStatus(
                     BinanceAdapters.toSymbol(pair),
                     orderId,
                     origClientOrderId,
@@ -205,18 +211,18 @@ public class BinanceTradeServiceRaw extends BinanceBaseService {
       Instrument pair, Long orderId, String origClientOrderId, String newClientOrderId)
       throws IOException, BinanceException {
     return decorateApiCall(
-            () ->
-                    (pair instanceof FuturesContract)
-            ? binanceFutures.cancelFutureOrder(
-                            BinanceAdapters.toSymbol(pair),
-                            orderId,
-                            origClientOrderId,
-                            getRecvWindow(),
-                            getTimestampFactory(),
-                            super.apiKey,
-                            super.signatureCreator
-                    )
-            :   binance.cancelOrder(
+        () ->
+            (pair instanceof FuturesContract)
+                ? binanceFutures.cancelFutureOrder(
+                BinanceAdapters.toSymbol(pair),
+                orderId,
+                origClientOrderId,
+                getRecvWindow(),
+                getTimestampFactory(),
+                super.apiKey,
+                super.signatureCreator
+            )
+                : binance.cancelOrder(
                     BinanceAdapters.toSymbol(pair),
                     orderId,
                     origClientOrderId,
@@ -233,16 +239,16 @@ public class BinanceTradeServiceRaw extends BinanceBaseService {
   public List<BinanceCancelledOrder> cancelAllOpenOrdersAllProducts(Instrument pair)
       throws IOException, BinanceException {
     return decorateApiCall(
-            () ->
-                    (pair instanceof FuturesContract)
-            ? binanceFutures.cancelAllFutureOpenOrders(
-                            BinanceAdapters.toSymbol(pair),
-                            getRecvWindow(),
-                            getTimestampFactory(),
-                            super.apiKey,
-                            super.signatureCreator
-                    )
-            : binance.cancelAllOpenOrders(
+        () ->
+            (pair instanceof FuturesContract)
+                ? binanceFutures.cancelAllFutureOpenOrders(
+                BinanceAdapters.toSymbol(pair),
+                getRecvWindow(),
+                getTimestampFactory(),
+                super.apiKey,
+                super.signatureCreator
+            )
+                : binance.cancelAllOpenOrders(
                     BinanceAdapters.toSymbol(pair),
                     getRecvWindow(),
                     getTimestampFactory(),
@@ -256,56 +262,58 @@ public class BinanceTradeServiceRaw extends BinanceBaseService {
   public List<BinanceOrder> allOrders(CurrencyPair pair, Long orderId, Integer limit)
       throws BinanceException, IOException {
     return decorateApiCall(
-            () ->
-                binance.allOrders(
-                    BinanceAdapters.toSymbol(pair),
-                    orderId,
-                    limit,
-                    getRecvWindow(),
-                    getTimestampFactory(),
-                    apiKey,
-                    signatureCreator))
+        () ->
+            binance.allOrders(
+                BinanceAdapters.toSymbol(pair),
+                orderId,
+                limit,
+                getRecvWindow(),
+                getTimestampFactory(),
+                apiKey,
+                signatureCreator))
         .withRetry(retry("allOrders"))
         .withRateLimiter(rateLimiter(REQUEST_WEIGHT_RATE_LIMITER))
         .call();
   }
 
-  public List<BinanceTrade> myTradesAllProducts(Instrument pair, Long orderId, Long startTime, Long endTime, Long fromId, Integer limit) throws BinanceException, IOException{
+  public List<BinanceTrade> myTradesAllProducts(Instrument pair, Long orderId, Long startTime,
+      Long endTime, Long fromId, Integer limit) throws BinanceException, IOException {
     return decorateApiCall(
-            () -> (pair instanceof FuturesContract)
-                    ? binanceFutures.myFutureTrades(
-                            BinanceAdapters.toSymbol(pair),
-                            orderId,
-                            startTime,
-                            endTime,
-                            fromId,
-                            limit,
-                            getRecvWindow(),
-                            getTimestampFactory(),
-                            apiKey,
-                            signatureCreator)
-                    : binance.myTrades(
-                            BinanceAdapters.toSymbol(pair),
-                            orderId,
-                            startTime,
-                            endTime,
-                            fromId,
-                            limit,
-                            getRecvWindow(),
-                            getTimestampFactory(),
-                            apiKey,
-                            signatureCreator))
-            .withRetry(retry("myTrades"))
-            .withRateLimiter(rateLimiter(REQUEST_WEIGHT_RATE_LIMITER), myTradesPermits(limit))
-            .call();
+        () -> (pair instanceof FuturesContract)
+            ? binanceFutures.myFutureTrades(
+            BinanceAdapters.toSymbol(pair),
+            orderId,
+            startTime,
+            endTime,
+            fromId,
+            limit,
+            getRecvWindow(),
+            getTimestampFactory(),
+            apiKey,
+            signatureCreator)
+            : binance.myTrades(
+                BinanceAdapters.toSymbol(pair),
+                orderId,
+                startTime,
+                endTime,
+                fromId,
+                limit,
+                getRecvWindow(),
+                getTimestampFactory(),
+                apiKey,
+                signatureCreator))
+        .withRetry(retry("myTrades"))
+        .withRateLimiter(rateLimiter(REQUEST_WEIGHT_RATE_LIMITER), myTradesPermits(limit))
+        .call();
   }
 
   public List<BinancePosition> openPositions() throws BinanceException, IOException {
     return decorateApiCall(
-            () -> binanceFutures.futuresAccount(getRecvWindow(), getTimestampFactory(), apiKey, signatureCreator))
-            .withRetry(retry("futures-account"))
-            .withRateLimiter(rateLimiter(REQUEST_WEIGHT_RATE_LIMITER), 5)
-            .call().getPositions();
+        () -> binanceFutures.futuresAccount(getRecvWindow(), getTimestampFactory(), apiKey,
+            signatureCreator))
+        .withRetry(retry("futures-account"))
+        .withRateLimiter(rateLimiter(REQUEST_WEIGHT_RATE_LIMITER), 5)
+        .call().getPositions();
   }
 
   /**
@@ -315,27 +323,28 @@ public class BinanceTradeServiceRaw extends BinanceBaseService {
    * Balance to BNB".
    *
    * @param startTime optional. If set, also the endTime must be set. If neither time is set, the
-   *     100 most recent dust logs are returned.
-   * @param endTime optional. If set, also the startTime must be set. If neither time is set, the
-   *     100 most recent dust logs are returned.
+   *                  100 most recent dust logs are returned.
+   * @param endTime   optional. If set, also the startTime must be set. If neither time is set, the
+   *                  100 most recent dust logs are returned.
    * @return
    * @throws IOException
    */
   public BinanceDustLog getDustLog(Long startTime, Long endTime) throws IOException {
 
-    if (((startTime != null) && (endTime == null)) || (startTime == null) && (endTime != null))
+    if (((startTime != null) && (endTime == null)) || (startTime == null) && (endTime != null)) {
       throw new ExchangeException(
           "You need to specify both, the start and the end date, or none of them");
+    }
 
     return decorateApiCall(
-            () ->
-                binance.getDustLog(
-                    startTime,
-                    endTime,
-                    getRecvWindow(),
-                    getTimestampFactory(),
-                    apiKey,
-                    signatureCreator))
+        () ->
+            binance.getDustLog(
+                startTime,
+                endTime,
+                getRecvWindow(),
+                getTimestampFactory(),
+                apiKey,
+                signatureCreator))
         .withRetry(retry("myDustLog"))
         .withRateLimiter(rateLimiter(REQUEST_WEIGHT_RATE_LIMITER))
         .call();
@@ -368,5 +377,36 @@ public class BinanceTradeServiceRaw extends BinanceBaseService {
       return 10;
     }
     return 5;
+  }
+
+
+  public void leverage(Instrument pair, Integer leverage) throws IOException {
+     decorateApiCall(
+        () ->
+        {
+          binanceFutures.leverage(
+              BinanceAdapters.toSymbol(pair),
+              leverage,
+              getRecvWindow(),
+              getTimestampFactory(),
+              apiKey,
+              signatureCreator);
+          return null;
+        })
+//        .withRetry(retry("leverage"))
+        .call();
+  }
+
+  public String commissionRate(Instrument pair) throws IOException {
+    return decorateApiCall(
+        () ->
+            binanceFutures.commissionRate(
+                BinanceAdapters.toSymbol(pair),
+                getRecvWindow(),
+                getTimestampFactory(),
+                apiKey,
+                signatureCreator))
+//        .withRetry(retry("commissionRate"))
+        .call();
   }
 }
