@@ -169,6 +169,15 @@ public class BinanceStreamingMarketDataService implements StreamingMarketDataSer
             .map(FundingRateWebsocketTransaction::toFundingRate);
   }
 
+  public Observable<FundingRateWebsocketTransaction> getMarkPrice(Instrument instrument, Object... args) {
+    return service.subscribeChannel(channelFromCurrency(instrument, BinanceSubscriptionType.FUNDING_RATES.getType()))
+        .map(it -> this.<FundingRateWebsocketTransaction>readTransaction(
+            it, FUNDING_RATE_TYPE, "funding rate"))
+        .map(BinanceWebsocketTransaction::getData)
+        .filter(data -> BinanceAdapters.adaptSymbol(data.getSymbol(), true).equals(instrument));
+  }
+
+
   private Observable<OrderBook> initOrderBookIfAbsent(Instrument instrument) {
     orderBookRawUpdatesSubscriptions.computeIfAbsent(
         instrument, s -> triggerObservableBody(rawOrderBookUpdates(instrument)));

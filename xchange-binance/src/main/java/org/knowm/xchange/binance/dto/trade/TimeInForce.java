@@ -7,7 +7,8 @@ public enum TimeInForce implements IOrderFlags {
   GTC,
   GTX,
   FOK,
-  IOC;
+  IOC,
+  GTE_GTC;
 
   @JsonCreator
   public static TimeInForce getTimeInForce(String s) {
