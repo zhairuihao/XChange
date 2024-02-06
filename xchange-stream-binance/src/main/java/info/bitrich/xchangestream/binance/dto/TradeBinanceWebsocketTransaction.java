@@ -2,6 +2,7 @@ package info.bitrich.xchangestream.binance.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.math.BigDecimal;
+import org.knowm.xchange.binance.dto.marketdata.BinanceAggTrades;
 
 public class TradeBinanceWebsocketTransaction extends ProductBinanceWebSocketTransaction {
 
@@ -38,5 +39,18 @@ public class TradeBinanceWebsocketTransaction extends ProductBinanceWebSocketTra
 
   public BinanceRawTrade getRawTrade() {
     return rawTrade;
+  }
+  public BinanceAggTrades getAggTrade() {
+    final BinanceAggTrades binanceAggTrades = new BinanceAggTrades(
+        rawTrade.getTradeId(),
+        rawTrade.getPrice(),
+        rawTrade.getQuantity(),
+        rawTrade.getBuyerOrderId(),
+        rawTrade.getSellerOrderId(),
+        rawTrade.getTimestamp(),
+        rawTrade.isBuyerMarketMaker(),
+        rawTrade.isIgnore()
+    );
+    return binanceAggTrades;
   }
 }

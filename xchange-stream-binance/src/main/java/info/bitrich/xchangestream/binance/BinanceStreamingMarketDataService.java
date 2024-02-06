@@ -67,6 +67,7 @@ public class BinanceStreamingMarketDataService implements StreamingMarketDataSer
   private final Map<Instrument, Observable<BinanceBookTicker>> bookTickerSubscriptions;
   private final Map<Instrument, Observable<OrderBook>> orderbookSubscriptions;
   private final Map<Instrument, Observable<BinanceRawTrade>> tradeSubscriptions;
+  private final Map<Instrument, Observable<BinanceAggTrades>> aggTradeSubscriptions;
   private final Map<Instrument, Observable<List<OrderBookUpdate>>> orderBookUpdatesSubscriptions;
   private final Map<Instrument, Map<KlineInterval, Observable<BinanceKline>>> klineSubscriptions;
   private final Map<Instrument, Observable<DepthBinanceWebSocketTransaction>>
@@ -108,6 +109,7 @@ public class BinanceStreamingMarketDataService implements StreamingMarketDataSer
     this.bookTickerSubscriptions = new ConcurrentHashMap<>();
     this.orderbookSubscriptions = new ConcurrentHashMap<>();
     this.tradeSubscriptions = new ConcurrentHashMap<>();
+    this.aggTradeSubscriptions =new ConcurrentHashMap<>();
     this.orderBookUpdatesSubscriptions = new ConcurrentHashMap<>();
     this.orderBookRawUpdatesSubscriptions = new ConcurrentHashMap<>();
     this.klineSubscriptions = new ConcurrentHashMap<>();
@@ -159,7 +161,11 @@ public class BinanceStreamingMarketDataService implements StreamingMarketDataSer
     return getRawTrades(instrument)
         .map(rawTrade -> BinanceStreamingAdapters.adaptRawTrade(rawTrade, instrument));
   }
-
+  public Observable<BinanceAggTrades> getAggTrades(Instrument instrument, Object... args) {
+    return aggTradeSubscriptions.computeIfAbsent(
+        instrument, s -> triggerObservableBody(aggTradeStream(instrument)).share());
+//        .map(rawTrade -> BinanceStreamingAdapters.adaptRawTrade(rawTrade, instrument));
+  }
   @Override
   public Observable<FundingRate> getFundingRate(Instrument instrument, Object... args) {
     return service
@@ -585,7 +591,22 @@ public class BinanceStreamingMarketDataService implements StreamingMarketDataSer
                     .equals(instrument))
         .map(transaction -> transaction.getData().getRawTrade());
   }
-
+  private Observable<BinanceAggTrades> aggTradeStream(Instrument instrument) {
+    return service
+        .subscribeChannel(channelFromCurrency(instrument, BinanceSubscriptionType.AGG_TRADE.getType()))
+        .map(it -> this.<TradeBinanceWebsocketTransaction>readTransaction(it,
+            getObjectMapper()
+                .getTypeFactory()
+                .constructType(
+                    new TypeReference<BinanceWebsocketTransaction<TradeBinanceWebsocketTransaction>>() {})
+            , "agg_trade"))
+        .filter(
+            transaction ->
+                BinanceAdapters.adaptSymbol(
+                        transaction.getData().getSymbol(), instrument instanceof FuturesContract)
+                    .equals(instrument))
+        .map(transaction -> transaction.getData().getAggTrade());
+  }
   /**
    * Force observable to execute its body, this way we get `BinanceStreamingService` to register the
    * observables emitter ready for our message arrivals.
@@ -694,7 +715,6 @@ public class BinanceStreamingMarketDataService implements StreamingMarketDataSer
         .constructType(
             new TypeReference<BinanceWebsocketTransaction<TradeBinanceWebsocketTransaction>>() {});
   }
-
   private static JavaType getDepthType() {
     return getObjectMapper()
         .getTypeFactory()
