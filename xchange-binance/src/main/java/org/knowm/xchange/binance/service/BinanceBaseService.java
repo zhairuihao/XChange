@@ -36,7 +36,7 @@ public class BinanceBaseService extends BaseResilientExchangeService<BinanceExch
                 BinanceAuthenticated.class, exchange.getExchangeSpecification())
             .build();
     ExchangeSpecification futuresSpec = exchange.getDefaultExchangeSpecification();
-    ExchangeSpecification inverseFuturesSpec = futuresSpec;
+    ExchangeSpecification inverseFuturesSpec =  exchange.getDefaultExchangeSpecification();
     futuresSpec.setSslUri(
         (exchange.usingSandbox())
             ? BinanceExchange.SANDBOX_FUTURES_URL
