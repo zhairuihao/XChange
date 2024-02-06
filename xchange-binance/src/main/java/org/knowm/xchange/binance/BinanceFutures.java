@@ -1,15 +1,5 @@
 package org.knowm.xchange.binance;
 
-import jakarta.ws.rs.POST;
-import java.util.Map;
-import org.knowm.xchange.binance.dto.BinanceException;
-import org.knowm.xchange.binance.dto.marketdata.BinanceAggTrades;
-import org.knowm.xchange.binance.dto.marketdata.BinanceFundingRate;
-import org.knowm.xchange.binance.dto.marketdata.BinanceOrderbook;
-import org.knowm.xchange.binance.dto.marketdata.BinanceTicker24h;
-import org.knowm.xchange.binance.dto.meta.BinanceSystemStatus;
-import org.knowm.xchange.binance.dto.meta.exchangeinfo.BinanceExchangeInfo;
-
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
@@ -17,6 +7,13 @@ import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.util.List;
+import org.knowm.xchange.binance.dto.BinanceException;
+import org.knowm.xchange.binance.dto.marketdata.BinanceAggTrades;
+import org.knowm.xchange.binance.dto.marketdata.BinanceFundingRate;
+import org.knowm.xchange.binance.dto.marketdata.BinanceOrderbook;
+import org.knowm.xchange.binance.dto.marketdata.BinanceTicker24h;
+import org.knowm.xchange.binance.dto.meta.BinanceSystemStatus;
+import org.knowm.xchange.binance.dto.meta.exchangeinfo.BinanceExchangeInfo;
 
 @Path("")
 @Produces(MediaType.APPLICATION_JSON)
@@ -43,8 +40,8 @@ public interface BinanceFutures {
 
   /**
    * @param symbol
-   * @param limit  optional, default 100 max 5000. Valid limits: [5, 10, 20, 50, 100, 500, 1000,
-   *               5000]
+   * @param limit optional, default 100 max 5000. Valid limits: [5, 10, 20, 50, 100, 500, 1000,
+   *     5000]
    * @return
    * @throws IOException
    * @throws BinanceException
@@ -69,16 +66,17 @@ public interface BinanceFutures {
 
   /**
    * Get compressed, aggregate trades. Trades that fill at the time, from the same order, with the
-   * same price will have the quantity aggregated.<br> If both startTime and endTime are sent, limit
-   * should not be sent AND the distance between startTime and endTime must be less than 24
-   * hours.<br> If frondId, startTime, and endTime are not sent, the most recent aggregate trades
-   * will be returned.
+   * same price will have the quantity aggregated.<br>
+   * If both startTime and endTime are sent, limit should not be sent AND the distance between
+   * startTime and endTime must be less than 24 hours.<br>
+   * If frondId, startTime, and endTime are not sent, the most recent aggregate trades will be
+   * returned.
    *
    * @param symbol
-   * @param fromId    optional, ID to get aggregate trades from INCLUSIVE.
+   * @param fromId optional, ID to get aggregate trades from INCLUSIVE.
    * @param startTime optional, Timestamp in ms to get aggregate trades from INCLUSIVE.
-   * @param endTime   optional, Timestamp in ms to get aggregate trades until INCLUSIVE.
-   * @param limit     optional, Default 500; max 500.
+   * @param endTime optional, Timestamp in ms to get aggregate trades until INCLUSIVE.
+   * @param limit optional, Default 500; max 500.
    * @return
    * @throws IOException
    * @throws BinanceException
@@ -100,8 +98,7 @@ public interface BinanceFutures {
    */
   @GET
   @Path("fapi/v1/premiumIndex")
-  List<BinanceFundingRate> fundingRates()
-      throws IOException, BinanceException;
+  List<BinanceFundingRate> fundingRates() throws IOException, BinanceException;
 
   /**
    * @param symbol the instrument to get the funding rate for
@@ -111,9 +108,9 @@ public interface BinanceFutures {
    */
   @GET
   @Path("fapi/v1/premiumIndex")
-  BinanceFundingRate fundingRate(
-      @QueryParam("symbol") String symbol)
+  BinanceFundingRate fundingRate(@QueryParam("symbol") String symbol)
       throws IOException, BinanceException;
+
 
   @GET
   @Path("/fapi/v1/klines")
