@@ -274,6 +274,8 @@ public class BinanceStreamingExchange extends BinanceExchange implements Streami
             buildSubscriptionStrings(
                 subscription.getTrades(), BinanceSubscriptionType.TRADE.getType()),
             buildSubscriptionStrings(
+                subscription.getTrades(), BinanceSubscriptionType.AGG_TRADE.getType()),
+            buildSubscriptionStrings(
                 subscription.getFundingRates(), BinanceSubscriptionType.FUNDING_RATES.getType()))
 
 
